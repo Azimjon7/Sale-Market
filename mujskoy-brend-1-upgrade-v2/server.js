@@ -860,6 +860,18 @@ app.patch("/api/orders/:id/status", verifyAdmin, (req, res) => {
   res.json({ success: true, order: publicOrder(orders[index]) });
 });
 
+app.delete("/api/orders/:id", verifyAdmin, (req, res) => {
+  const orders = readJson(ORDERS_FILE);
+  const filtered = orders.filter((order) => String(order.id) !== String(req.params.id));
+
+  if (filtered.length === orders.length) {
+    return res.status(404).json({ message: "Buyurtma topilmadi" });
+  }
+
+  writeJson(ORDERS_FILE, filtered);
+  res.json({ success: true });
+});
+
 const orderUpload = upload.single("paymentScreenshot");
 
 app.post("/api/orders", orderUpload, (req, res) => {

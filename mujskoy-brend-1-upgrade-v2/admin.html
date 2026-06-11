@@ -185,23 +185,23 @@
 
     .toast {
       position: fixed;
-      top: 18px;
-      right: 18px;
-      z-index: 100;
-      max-width: min(360px, calc(100vw - 36px));
-      padding: 14px 16px;
+      top: 24px;
+      right: 24px;
+      z-index: 9999;
+      max-width: min(360px, calc(100vw - 48px));
+      padding: 14px 18px;
       border-radius: 14px;
-      background: #f1fbf5;
-      color: var(--ap-success);
-      border: 1px solid rgba(35, 122, 75, 0.22);
-      box-shadow: var(--ap-shadow);
-      font-weight: 800;
+      background: #16a34a;
+      color: #fff;
+      font-weight: 700;
+      font-size: 14px;
+      line-height: 1.4;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     }
 
     .toast--error {
-      background: #fff2f2;
-      color: var(--ap-danger);
-      border-color: rgba(180, 58, 58, 0.22);
+      background: #dc2626;
+      color: #fff;
     }
 
     .admin-shell {
@@ -1361,6 +1361,17 @@
 <body class="market-body">
   <div id="toast" class="toast hidden"></div>
 
+  <!-- Order Detail Modal -->
+  <div id="orderDetailOverlay" class="odm-overlay hidden" onclick="closeOrderDetailModal()">
+    <div class="odm-drawer" onclick="event.stopPropagation()">
+      <div class="odm-header">
+        <h3>Buyurtma tafsilotlari</h3>
+        <button class="odm-close" onclick="closeOrderDetailModal()" aria-label="Yopish">&times;</button>
+      </div>
+      <div id="orderDetailContent" class="odm-body"></div>
+    </div>
+  </div>
+
   <div id="loginPage" class="login-page">
     <div class="login-card">
       <div class="admin-login-logo">
@@ -2130,18 +2141,37 @@
       recent.innerHTML = latest.map((order) => {
         const status = normalizeStatus(order.status);
         return `
-          <div class="recent-row">
-            <div>
+          <div class="recent-row" data-order-id="${escapeAttr(order.id)}" style="cursor:pointer;">
+            <div class="recent-row__info">
               <strong>${escapeHtml(order.name || "Mijoz")}</strong>
               <div class="small">${escapeHtml(order.id || "-")} · ${escapeHtml(formatDate(order.createdAt))}</div>
             </div>
-            <div>
+            <div class="recent-row__right">
               <span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span>
               <div class="small" style="margin-top:6px; text-align:right;">${formatPrice(getOrderTotal(order))}</div>
             </div>
+            <button class="btn btn-danger btn-sm js-recent-delete" data-id="${escapeAttr(order.id)}" title="O'chirish">🗑 O'chirish</button>
           </div>
         `;
       }).join("");
+
+      // Attach click events for recent order rows
+      recent.querySelectorAll(".recent-row").forEach((row) => {
+        row.addEventListener("click", (e) => {
+          if (e.target.closest(".js-recent-delete")) return;
+          const orderId = row.dataset.orderId;
+          const order = cachedOrders.find((o) => String(o.id) === String(orderId));
+          if (order) openOrderDetailModal(order);
+        });
+      });
+
+      // Attach delete button events
+      recent.querySelectorAll(".js-recent-delete").forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          deleteOrder(btn.dataset.id);
+        });
+      });
     }
 
     async function loadCategories() {
@@ -2820,6 +2850,7 @@
       try {
         const orders = await requestJson("/api/orders");
         cachedOrders = Array.isArray(orders) ? orders : [];
+        writeLocalArray("mujskoy_orders", cachedOrders);
         if (shouldRender) renderOrders();
         return cachedOrders;
       } catch (err) {
@@ -2909,6 +2940,7 @@
                 </select>
               </div>
               <button class="btn btn-primary js-save-order-status" data-id="${escapeAttr(order.id)}" data-select="${selectId}">Holatni saqlash</button>
+              <button class="btn btn-danger js-delete-order" data-id="${escapeAttr(order.id)}">O'chirish</button>
             </div>
           </article>
         `;
@@ -2917,11 +2949,124 @@
       document.querySelectorAll(".js-save-order-status").forEach((btn) => {
         btn.addEventListener("click", () => saveOrderStatus(btn.dataset.id, btn.dataset.select));
       });
+
+      document.querySelectorAll(".js-delete-order").forEach((btn) => {
+        btn.addEventListener("click", () => deleteOrder(btn.dataset.id));
+      });
     }
 
     async function saveOrderStatus(orderId, selectId) {
       const select = document.getElementById(selectId);
       if (!select) return;
+
+      // Update in-memory array
+      cachedOrders = cachedOrders.map((order) => (
+        String(order.id) === String(orderId) ? { ...order, status: select.value } : order
+      ));
+      // Persist to localStorage
+      writeLocalArray("mujskoy_orders", cachedOrders);
+      // Update UI immediately
+      renderOrders();
+      renderDashboard(cachedProducts, cachedOrders);
+      showNotice("Buyurtma statusi yangilandi");
+
+      // Try to update backend too (fire and forget)
+      try {
+        await requestJson("/api/orders/" + encodeURIComponent(orderId) + "/status", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: select.value }),
+        });
+      } catch (err) {
+        // Backend unavailable — localStorage is already updated
+      }
+    }
+
+    // ========== ORDER DETAIL MODAL ==========
+    function openOrderDetailModal(order) {
+      const overlay = document.getElementById("orderDetailOverlay");
+      const content = document.getElementById("orderDetailContent");
+      const status = normalizeStatus(order.status);
+      const paymentType = String(order.paymentType || "naqd").toLowerCase() === "karta" ? "Karta" : "Naqd";
+
+      const items = Array.isArray(order.items) ? order.items : [];
+      const itemsHtml = items.length ? items.map((item) => {
+        const qty = Math.max(1, Number(item.qty || 1));
+        const total = Number(item.lineTotal || 0) || Number(item.price || 0) * qty;
+        const meta = [
+          item.size ? "O'lcham: " + item.size : "",
+          item.color ? "Rang: " + item.color : "",
+        ].filter(Boolean).join(" · ");
+        return `
+          <div class="odm-item">
+            <strong>${escapeHtml(item.name || "Mahsulot")}</strong>
+            <div class="odm-item-meta">${qty} ta · ${formatPrice(total)}</div>
+            ${meta ? `<div class="odm-item-meta">${escapeHtml(meta)}</div>` : ""}
+          </div>
+        `;
+      }).join("") : '<div class="empty">Mahsulotlar ko\'rsatilmagan.</div>';
+
+      const screenshot = order.paymentScreenshot ? `
+        <div class="odm-section">
+          <span class="odm-label">To'lov skrinshoti</span>
+          <a href="${escapeAttr(normalizeImage(order.paymentScreenshot))}" target="_blank">
+            <img class="odm-screenshot" src="${escapeAttr(normalizeImage(order.paymentScreenshot))}" alt="to'lov skrinshoti">
+          </a>
+        </div>
+      ` : "";
+
+      content.innerHTML = `
+        <div class="odm-grid">
+          <div class="odm-field"><span class="odm-label">Buyurtma ID</span><strong>${escapeHtml(order.id || "-")}</strong></div>
+          <div class="odm-field"><span class="odm-label">Holat</span><span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span></div>
+          <div class="odm-field"><span class="odm-label">Mijoz</span><strong>${escapeHtml(order.name || "-")}</strong></div>
+          <div class="odm-field"><span class="odm-label">Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
+          <div class="odm-field"><span class="odm-label">Manzil</span><strong>${escapeHtml(order.address || "-")}</strong></div>
+          <div class="odm-field"><span class="odm-label">To'lov turi</span><strong>${escapeHtml(paymentType)}</strong></div>
+          <div class="odm-field"><span class="odm-label">Yaratilgan sana</span><strong>${escapeHtml(formatDate(order.createdAt))}</strong></div>
+          <div class="odm-field"><span class="odm-label">Jami</span><strong>${formatPrice(getOrderTotal(order))}</strong></div>
+        </div>
+        ${order.note ? `<div class="odm-section"><span class="odm-label">Izoh</span><p>${escapeHtml(order.note)}</p></div>` : ""}
+        <div class="odm-section">
+          <span class="odm-label">Mahsulotlar</span>
+          <div class="odm-items-list">${itemsHtml}</div>
+        </div>
+        ${screenshot}
+        <div class="odm-actions">
+          <div class="odm-status-row">
+            <select id="odmStatusSelect">
+              ${ORDER_STATUSES.map((item) => `<option value="${escapeAttr(item)}"${item === status ? " selected" : ""}>${escapeHtml(item)}</option>`).join("")}
+            </select>
+            <button class="btn btn-primary" onclick="saveOrderStatusFromModal('${escapeAttr(order.id)}')">Holatni saqlash</button>
+          </div>
+          <div class="odm-btn-row">
+            <button class="btn btn-danger" onclick="deleteOrderFromModal('${escapeAttr(order.id)}')">🗑 O'chirish</button>
+            <button class="btn btn-secondary" onclick="closeOrderDetailModal()">Yopish</button>
+          </div>
+        </div>
+      `;
+
+      overlay.classList.remove("hidden");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeOrderDetailModal() {
+      document.getElementById("orderDetailOverlay").classList.add("hidden");
+      document.body.style.overflow = "";
+    }
+
+    async function saveOrderStatusFromModal(orderId) {
+      const select = document.getElementById("odmStatusSelect");
+      if (!select) return;
+
+      cachedOrders = cachedOrders.map((order) => (
+        String(order.id) === String(orderId) ? { ...order, status: select.value } : order
+      ));
+      writeLocalArray("mujskoy_orders", cachedOrders);
+      renderOrders();
+      renderDashboard(cachedProducts, cachedOrders);
+      closeOrderDetailModal();
+      showNotice("Buyurtma statusi yangilandi");
 
       try {
         await requestJson("/api/orders/" + encodeURIComponent(orderId) + "/status", {
@@ -2929,17 +3074,33 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ status: select.value }),
         });
-        showNotice("Buyurtma statusi yangilandi");
-        await loadOrders();
-        await loadDashboard();
+      } catch (err) {}
+    }
+
+    function deleteOrderFromModal(orderId) {
+      closeOrderDetailModal();
+      deleteOrder(orderId);
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm("Bu buyurtmani o'chirishni xohlaysizmi?")) return;
+
+      // Remove from in-memory array first
+      cachedOrders = cachedOrders.filter((order) => String(order.id) !== String(orderId));
+      // Persist to localStorage immediately
+      writeLocalArray("mujskoy_orders", cachedOrders);
+      // Update UI immediately
+      renderOrders();
+      renderDashboard(cachedProducts, cachedOrders);
+      showNotice("Buyurtma o'chirildi");
+
+      // Try to delete from backend too (fire and forget)
+      try {
+        await requestJson("/api/orders/" + encodeURIComponent(orderId), {
+          method: "DELETE",
+        });
       } catch (err) {
-        cachedOrders = readLocalArray("mujskoy_orders").map((order) => (
-          String(order.id) === String(orderId) ? { ...order, status: select.value } : order
-        ));
-        writeLocalArray("mujskoy_orders", cachedOrders);
-        renderOrders();
-        await loadDashboard();
-        showNotice("Buyurtma statusi yangilandi");
+        // Backend unavailable or no endpoint — localStorage is already updated
       }
     }
 
