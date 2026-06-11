@@ -1,0 +1,227 @@
+[
+  {
+    "id": "ord_1780735600993",
+    "name": "Azimjon Gulomov",
+    "phone": "(97) 336 13 83",
+    "address": "Sergili street",
+    "note": "aldama",
+    "subtotal": 175000,
+    "discountAmount": 17500,
+    "promoCode": "SALE10",
+    "total": 157500,
+    "items": [
+      {
+        "productId": "prd_1775680181383",
+        "name": "🔥 Erkaklar uchun yozgi tapochka 😎",
+        "size": "40",
+        "color": "qora",
+        "qty": 1,
+        "price": 175000,
+        "lineTotal": 175000
+      }
+    ],
+    "paymentType": "naqd",
+    "paymentScreenshot": "",
+    "status": "cancelled",
+    "createdAt": "2026-06-06T08:46:40.995Z",
+    "updatedAt": "2026-06-10T20:05:42.146Z"
+  },
+  {
+    "id": "ord_1780731044503",
+    "name": "Test Buyer",
+    "phone": "901234567",
+    "address": "Toshkent",
+    "note": "",
+    "subtotal": 199000,
+    "discountAmount": 0,
+    "promoCode": "",
+    "total": 199000,
+    "items": [
+      {
+        "productId": "prd_1775681573066",
+        "name": "🔥 Premium slim-fit erkaklar ko‘ylagi",
+        "size": "",
+        "color": "",
+        "qty": 1,
+        "price": 199000,
+        "lineTotal": 199000
+      }
+    ],
+    "paymentType": "naqd",
+    "paymentScreenshot": "",
+    "status": "cancelled",
+    "createdAt": "2026-06-06T07:30:44.503Z",
+    "updatedAt": "2026-06-10T20:05:51.470Z"
+  },
+  {
+    "id": "ord_1780222674731",
+    "name": "Azimjon Gulomov",
+    "phone": "902008747",
+    "address": "Andijan city 2-Mikrarion, apartment 49,",
+    "note": "assa",
+    "subtotal": 1110000,
+    "discountAmount": 111000,
+    "promoCode": "SALE10",
+    "total": 999000,
+    "items": [
+      {
+        "productId": "prd_1775680295547",
+        "name": "🧢 Trend kepka 😎",
+        "size": "Universal",
+        "color": "qora",
+        "qty": 1,
+        "price": 80000,
+        "lineTotal": 80000
+      },
+      {
+        "productId": "prd_1775681243067",
+        "name": "👟 Yoz uchun TOP тапочка 🔥",
+        "size": "36",
+        "color": "oq",
+        "qty": 1,
+        "price": 205000,
+        "lineTotal": 205000
+      },
+      {
+        "productId": "prd_1775681008960",
+        "name": "👟 AirMax Fire",
+        "size": "36",
+        "color": "qora",
+        "qty": 1,
+        "price": 445000,
+        "lineTotal": 445000
+      },
+      {
+        "productId": "prd_1775680656769",
+        "name": "Erkaklar uchun premium komplekt 🔥",
+        "size": "S",
+        "color": "Standart",
+        "qty": 1,
+        "price": 380000,
+        "lineTotal": 380000
+      }
+    ],
+    "paymentType": "naqd",
+    "paymentScreenshot": "",
+    "status": "cancelled",
+    "createdAt": "2026-05-31T10:17:54.733Z",
+    "updatedAt": "2026-06-10T20:05:56.807Z"
+  },
+  {
+    "id": "ord_1775639797384",
+    "name": "AZIMJON",
+    "phone": "+998902008747",
+    "address": "Mikrarion2",
+    "note": "yetkazib berish",
+    "total": 205000,
+    "items": [
+      {
+        "productId": "prd_1775593213533",
+        "name": "💀 Viral tapochka 😅🔥",
+        "size": "34",
+        "color": "oq",
+        "qty": 1,
+        "price": 205000,
+        "lineTotal": 205000
+      }
+    ],
+    "paymentType": "naqd",
+    "paymentScreenshot": "",
+    "createdAt": "2026-04-08T09:16:37.385Z",
+    "status": "cancelled",
+    "updatedAt": "2026-06-10T20:05:59.810Z"
+  },
+  {
+    "id": "ord_1775592414678",
+    "name": "Azimjon Gulomov",
+    "phone": "902008747",
+    "address": "Mikrarion2",
+    "note": "aaaaaaaaaaaaaaaa",
+    "total": 420000,
+    "items": [
+      {
+        "productId": "prd_1775323880022",
+        "name": "👟 ADIZERO EVO SL – sport uchun TOP model 🔥",
+        "size": "36",
+        "color": "qora",
+        "qty": 1,
+        "price": 420000,
+        "lineTotal": 420000
+      }
+    ],
+    "paymentType": "karta",
+    "paymentScreenshot": "uploads/prd_1775592414668_450849.jpg",
+    "createdAt": "2026-04-07T20:06:54.678Z",
+    "status": "cancelled",
+    "updatedAt": "2026-06-10T20:06:04.101Z"
+  },
+  {
+    "id": "ord_1775591977923",
+    "name": "Azimjon Gulomov",
+    "phone": "902008747",
+    "address": "Mikrarion22",
+    "note": "kere",
+    "total": 420000,
+    "items": [
+      {
+        "productId": "prd_1775323880022",
+        "name": "👟 ADIZERO EVO SL – sport uchun TOP model 🔥",
+        "size": "36",
+        "color": "qora",
+        "qty": 1,
+        "price": 420000,
+        "lineTotal": 420000
+      }
+    ],
+    "createdAt": "2026-04-07T19:59:37.924Z",
+    "status": "cancelled",
+    "updatedAt": "2026-06-10T20:06:07.819Z"
+  },
+  {
+    "id": "ord_1775588201420",
+    "name": "Azimjon Gulomov",
+    "phone": "902008747",
+    "address": "Mikrarion2",
+    "note": "11",
+    "total": 0,
+    "items": [
+      {
+        "productId": "prd_1775126299278",
+        "name": "Mahsulot",
+        "size": "S – 5XL",
+        "color": "oq",
+        "qty": 1,
+        "price": 0,
+        "lineTotal": 0
+      }
+    ],
+    "createdAt": "2026-04-07T18:56:41.421Z",
+    "status": "cancelled",
+    "updatedAt": "2026-06-10T20:06:10.945Z"
+  },
+  {
+    "id": "ord_1775325507435",
+    "name": "azimjon",
+    "phone": "902008747",
+    "address": "Andijan city 2-Mikrarion, apartment 49,",
+    "note": "kerak edi tezro",
+    "total": 650000,
+    "items": [
+      {
+        "id": "prd_1775323880022",
+        "name": "krasovka",
+        "price": 130000,
+        "oldPrice": 10000,
+        "image": "uploads/prd_1775323879937.jpg",
+        "category": "Futbolkalar",
+        "desc": "juda chiroyli",
+        "size": "",
+        "color": "oq",
+        "qty": 5
+      }
+    ],
+    "createdAt": "2026-04-04T17:58:27.436Z",
+    "status": "cancelled",
+    "updatedAt": "2026-06-10T20:06:14.341Z"
+  }
+]
