@@ -22,8 +22,8 @@
     ],
     "paymentType": "naqd",
     "paymentScreenshot": "",
-    "status": "confirmed",
+    "status": "delivered",
     "createdAt": "2026-06-13T08:40:19.020Z",
-    "updatedAt": "2026-06-13T08:40:45.214Z"
+    "updatedAt": "2026-06-13T14:38:29.985Z"
   }
 ]

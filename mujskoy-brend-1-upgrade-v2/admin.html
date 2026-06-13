@@ -1373,6 +1373,20 @@
     </div>
   </div>
 
+  <!-- Stat Detail Modal -->
+  <div id="statDetailOverlay" class="odm-overlay hidden" onclick="closeStatDetail()">
+    <div class="odm-drawer" onclick="event.stopPropagation()">
+      <div class="odm-header">
+        <h3 id="statDetailTitle">Tafsilotlar</h3>
+        <button class="odm-close" onclick="closeStatDetail()" aria-label="Yopish">&times;</button>
+      </div>
+      <div id="statDetailContent" class="odm-body"></div>
+    </div>
+  </div>
+
+  <!-- Mobile sidebar overlay -->
+  <div id="adminSidebarOverlay" class="adm-sidebar-overlay hidden" onclick="closeMobileSidebar()"></div>
+
   <div id="loginPage" class="login-page">
     <div class="login-card">
       <div class="admin-login-logo">
@@ -1399,8 +1413,8 @@
 
   <div id="adminApp" class="admin-shell hidden">
     <aside class="sidebar">
-      <div class="brand">
-        <div class="brand-mark">SM</div>
+      <div class="brand" id="adminMobileBrand">
+        <div class="brand-mark brand-mark--circle">SM</div>
         <div>
           <h2>Sale Market</h2>
           <p>Sotuvchi kabineti</p>
@@ -1444,9 +1458,6 @@
             <span>⌕</span>
             <input id="adminGlobalSearch" type="search" placeholder="Mahsulot yoki buyurtma qidirish..." />
           </label>
-          <button class="admin-icon-btn" type="button" aria-label="Bildirishnomalar">
-            <span>●</span>
-          </button>
           <div class="admin-mini-avatar" aria-label="Admin">A</div>
         </div>
       </div>
@@ -1454,37 +1465,37 @@
       <section id="sectionDashboard" class="panel">
         <h3>Boshqaruv paneli</h3>
         <div class="stats-grid">
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="products" onclick="openStatDetail('products')">
             <div class="stat-icon">□</div>
             <span>Jami mahsulotlar</span>
             <strong id="statProducts">0</strong>
             <small>Faol katalog</small>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="orders" onclick="openStatDetail('orders')">
             <div class="stat-icon">☰</div>
             <span>Jami buyurtmalar</span>
             <strong id="statOrders">0</strong>
             <small>Barcha buyurtmalar</small>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="today" onclick="openStatDetail('today')">
             <div class="stat-icon">◷</div>
             <span>Bugungi buyurtmalar</span>
             <strong id="statTodayOrders">0</strong>
             <small>Bugungi faollik</small>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="revenue" onclick="openStatDetail('revenue')">
             <div class="stat-icon">S</div>
             <span>Umumiy tushum</span>
             <strong id="statRevenue">0 so'm</strong>
             <small>Bekor qilinganlarsiz</small>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="delivered" onclick="openStatDetail('delivered')">
             <div class="stat-icon">✓</div>
             <span>Yetkazilgan buyurtmalar</span>
             <strong id="statDeliveredOrders">0</strong>
             <small>Muvaffaqiyatli yakunlangan</small>
           </div>
-          <div class="stat-card">
+          <div class="stat-card" role="button" tabindex="0" data-stat="cancelled" onclick="openStatDetail('cancelled')">
             <div class="stat-icon">!</div>
             <span>Bekor qilingan buyurtmalar</span>
             <strong id="statCancelledOrders">0</strong>
@@ -3212,64 +3223,5 @@
     });
   </script>
   <script src="js/admin-upgrade.js"></script>
-  <script>
-    /* ── Admin Mobile Sidebar Toggle ── */
-    (function () {
-      function initMobileSidebar() {
-        var sidebar = document.querySelector('.sidebar');
-        var brand = sidebar && sidebar.querySelector('.brand');
-        if (!brand || !sidebar) return;
-
-        function isMobile() {
-          return window.innerWidth <= 900;
-        }
-
-        function toggleSidebar(e) {
-          if (!isMobile()) return;
-          e.stopPropagation();
-          sidebar.classList.toggle('sidebar--open');
-        }
-
-        function closeSidebarOnOutside(e) {
-          if (!isMobile()) return;
-          if (!sidebar.contains(e.target)) {
-            sidebar.classList.remove('sidebar--open');
-          }
-        }
-
-        function closeSidebarOnMenuClick() {
-          if (!isMobile()) return;
-          sidebar.classList.remove('sidebar--open');
-        }
-
-        brand.addEventListener('click', toggleSidebar);
-        document.addEventListener('click', closeSidebarOnOutside);
-
-        /* close sidebar when a menu button is clicked */
-        var menuBtns = sidebar.querySelectorAll('.menu button');
-        menuBtns.forEach(function (btn) {
-          btn.addEventListener('click', closeSidebarOnMenuClick);
-        });
-
-        /* on resize: if desktop, remove class */
-        window.addEventListener('resize', function () {
-          if (!isMobile()) {
-            sidebar.classList.remove('sidebar--open');
-          }
-          // Re-render orders list when crossing the mobile/desktop breakpoint
-          const ordersList = document.getElementById('ordersList');
-          if (ordersList && ordersList.children.length > 0 && typeof renderOrders === 'function') {
-            renderOrders();
-          }
-        });
-      }
-
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMobileSidebar);
-      } else {
-        initMobileSidebar();
-      }
-    })();
-  </script>
 </body>
 </html>

@@ -2219,11 +2219,79 @@
    ═══════════════════════════════════════════════════ */
 
 @media (max-width: 768px) {
-  .success-card,
-  .order-success {
-    padding: 24px 16px !important;
-    border-radius: 20px !important;
-    margin: 16px auto !important;
+  .success-section {
+    padding: 24px 14px !important;
+    min-height: auto !important;
+    align-items: flex-start !important;
+  }
+  .success-card {
+    padding: 28px 18px !important;
+    border-radius: 22px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .success-mark {
+    width: 56px !important;
+    height: 56px !important;
+    font-size: 22px !important;
+    margin-bottom: 18px !important;
+  }
+  .success-card h1 {
+    font-size: 20px !important;
+    margin-bottom: 10px !important;
+  }
+  .success-card > p {
+    font-size: 13px !important;
+    margin-bottom: 20px !important;
+  }
+  .success-details {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+  }
+  /* Order ID spans full width */
+  .success-details .success-detail:first-child {
+    grid-column: 1 / -1 !important;
+  }
+  .success-detail {
+    padding: 11px 10px !important;
+    border-radius: 12px !important;
+  }
+  .success-detail span {
+    font-size: 10px !important;
+  }
+  .success-detail strong {
+    font-size: 13px !important;
+  }
+  .success-actions {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  .success-actions .site-btn {
+    width: 100% !important;
+    flex: none !important;
+    height: 48px !important;
+    line-height: 1 !important;
+    font-size: 14px !important;
+    border-radius: 14px !important;
+    justify-content: center !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .success-card {
+    padding: 22px 14px !important;
+    border-radius: 18px !important;
+  }
+  .success-card h1 {
+    font-size: 18px !important;
+  }
+  .success-mark {
+    width: 50px !important;
+    height: 50px !important;
+    font-size: 20px !important;
   }
 }
 
