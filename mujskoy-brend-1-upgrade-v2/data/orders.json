@@ -1,1 +1,29 @@
-[]
+[
+  {
+    "id": "ord_1781340019017",
+    "name": "azim",
+    "phone": "+998902008747",
+    "address": "tashkent, chilonzor, 15-kv",
+    "note": "uygacha yetqazib bering",
+    "subtotal": 410000,
+    "discountAmount": 82000,
+    "promoCode": "SUMMER20",
+    "total": 328000,
+    "items": [
+      {
+        "productId": "prd_1775681243067",
+        "name": "👟 Yoz uchun TOP тапочка 🔥",
+        "size": "36",
+        "color": "oq",
+        "qty": 2,
+        "price": 205000,
+        "lineTotal": 410000
+      }
+    ],
+    "paymentType": "naqd",
+    "paymentScreenshot": "",
+    "status": "confirmed",
+    "createdAt": "2026-06-13T08:40:19.020Z",
+    "updatedAt": "2026-06-13T08:40:45.214Z"
+  }
+]
