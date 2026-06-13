@@ -1357,6 +1357,7 @@
     }
   </style>
   <link rel="stylesheet" href="css/admin-upgrade.css" type="text/css" />
+  <link rel="stylesheet" href="css/admin-mobile.css" type="text/css" />
 </head>
 <body class="market-body">
   <div id="toast" class="toast hidden"></div>
@@ -3179,5 +3180,59 @@
     });
   </script>
   <script src="js/admin-upgrade.js"></script>
+  <script>
+    /* ── Admin Mobile Sidebar Toggle ── */
+    (function () {
+      function initMobileSidebar() {
+        var sidebar = document.querySelector('.sidebar');
+        var brand = sidebar && sidebar.querySelector('.brand');
+        if (!brand || !sidebar) return;
+
+        function isMobile() {
+          return window.innerWidth <= 900;
+        }
+
+        function toggleSidebar(e) {
+          if (!isMobile()) return;
+          e.stopPropagation();
+          sidebar.classList.toggle('sidebar--open');
+        }
+
+        function closeSidebarOnOutside(e) {
+          if (!isMobile()) return;
+          if (!sidebar.contains(e.target)) {
+            sidebar.classList.remove('sidebar--open');
+          }
+        }
+
+        function closeSidebarOnMenuClick() {
+          if (!isMobile()) return;
+          sidebar.classList.remove('sidebar--open');
+        }
+
+        brand.addEventListener('click', toggleSidebar);
+        document.addEventListener('click', closeSidebarOnOutside);
+
+        /* close sidebar when a menu button is clicked */
+        var menuBtns = sidebar.querySelectorAll('.menu button');
+        menuBtns.forEach(function (btn) {
+          btn.addEventListener('click', closeSidebarOnMenuClick);
+        });
+
+        /* on resize: if desktop, remove class */
+        window.addEventListener('resize', function () {
+          if (!isMobile()) {
+            sidebar.classList.remove('sidebar--open');
+          }
+        });
+      }
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMobileSidebar);
+      } else {
+        initMobileSidebar();
+      }
+    })();
+  </script>
 </body>
 </html>
