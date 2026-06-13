@@ -187,7 +187,6 @@ window.MBHelpers = {
             <h6><a href="product-details.html?id=${normalized.id}">${normalized.name || "Mahsulot"}</a></h6>
             ${descriptionHtml}
             <div class="market-rating"><i class="fa fa-star"></i><span>4.${Math.floor((Number(normalized.price)||0)%9)} • 100+ sotildi</span></div>
-            <div class="market-installment">oyiga ${this.currency(Math.max(1, Math.round(Number(normalized.price || 0) / 12)))}</div>
             <div class="product__price">${this.currency(normalized.price)} ${oldPrice}</div>
             <div class="product__links">
               ${action}

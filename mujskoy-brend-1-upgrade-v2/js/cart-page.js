@@ -1,88 +1,285 @@
 (async function () {
   const root = document.getElementById('cart-root');
   if (!root) return;
+
+  // ── ensure helpers loaded ─────────────────────────────────────────────────
   if (!window.MBHelpers) {
-    const s = document.createElement("script");
-    s.src = "js/helpers.js";
+    const s = document.createElement('script');
+    s.src = 'js/helpers.js';
     document.body.appendChild(s);
     await new Promise((r) => (s.onload = r));
   }
-  const cart = MBStore.getCart();
-  if (!cart.length) {
-    root.innerHTML = `
-      <div class="market-empty-state">
-        <div class="market-empty-icon"><i class="fa fa-shopping-bag"></i></div>
-        <h3>Savat hozircha bo'sh</h3>
-        <p>Yoqtirgan mahsulotingizni katalogdan tanlang va savatga qo'shing.</p>
-        <a href="shop.html" class="market-btn"><i class="fa fa-th-large"></i> Katalogga o'tish</a>
-      </div>`;
+
+  // ── state ─────────────────────────────────────────────────────────────────
+  let cartItems = [];   // { ...cartEntry, index, product }
+  let allProducts = [];
+
+  // ── helpers ───────────────────────────────────────────────────────────────
+  function formatMoney(val) {
+    return Number(val || 0).toLocaleString('uz-UZ') + " so'm";
+  }
+
+  function calcTotals() {
+    const subtotal = cartItems.reduce(
+      (s, item) => s + (Number(item.product.price) || 0) * item.qty, 0
+    );
+    const delivery = subtotal > 300000 ? 0 : 25000;
+    return { subtotal, delivery, grandTotal: subtotal + delivery };
+  }
+
+  function isMobile() {
+    return window.innerWidth <= 768;
+  }
+
+  // ── sticky checkout bar ───────────────────────────────────────────────────
+  function injectCheckoutBar() {
+    if (document.getElementById('mb-cart-checkout-bar')) return;
+    const bar = document.createElement('div');
+    bar.id = 'mb-cart-checkout-bar';
+    bar.innerHTML =
+      '<div class="mb-bar-total">' +
+        '<span class="mb-bar-total-label">Umumiy summa</span>' +
+        '<span class="mb-bar-total-amount" id="mb-bar-amount">0 so\'m</span>' +
+      '</div>' +
+      '<a href="checkout.html" class="mb-bar-btn">' +
+        '<i class="fa fa-credit-card"></i> Buyurtma berish' +
+      '</a>';
+    document.body.appendChild(bar);
+  }
+
+  function updateCheckoutBar() {
+    const bar = document.getElementById('mb-cart-checkout-bar');
+    if (!bar) return;
+    if (!cartItems.length) {
+      bar.classList.add('mb-bar--hidden');
+      return;
+    }
+    bar.classList.remove('mb-bar--hidden');
+    const amountEl = document.getElementById('mb-bar-amount');
+    if (amountEl) amountEl.textContent = formatMoney(calcTotals().grandTotal);
+  }
+
+  // ── cart count badge ──────────────────────────────────────────────────────
+  function refreshCartBadge() {
+    const count = cartItems.reduce((s, i) => s + i.qty, 0);
+    document.querySelectorAll('.js-cart-count, .market-cart-tip').forEach(el => {
+      el.textContent = count;
+    });
+    const navBadge = document.querySelector('#mb-bottom-nav .mb-nav-badge');
+    if (navBadge) {
+      if (count > 0) navBadge.textContent = count > 99 ? '99+' : count;
+      else navBadge.remove();
+    }
+    document.dispatchEvent(new CustomEvent('mb:cart-updated'));
+  }
+
+  // ── render summary sidebar ────────────────────────────────────────────────
+  function renderSummary() {
+    const { subtotal, delivery, grandTotal } = calcTotals();
+    const summaryEl = document.getElementById('cart-summary-aside');
+    if (!summaryEl) return;
+    summaryEl.innerHTML =
+      '<div class="summary-badge"><i class="fa fa-shield"></i> Xavfsiz buyurtma</div>' +
+      '<h3>Buyurtma xulosasi</h3>' +
+      '<div class="summary-line"><span>Mahsulotlar</span><strong>' + formatMoney(subtotal) + '</strong></div>' +
+      '<div class="summary-line"><span>Yetkazib berish</span><strong>' + (delivery ? formatMoney(delivery) : 'Bepul') + '</strong></div>' +
+      '<div class="summary-divider"></div>' +
+      '<div class="summary-total"><span>Umumiy summa</span><strong>' + formatMoney(grandTotal) + '</strong></div>' +
+      '<a href="checkout.html" class="market-btn market-btn--full"><i class="fa fa-credit-card"></i> Buyurtmaga o\'tish</a>' +
+      '<p class="summary-note">300 000 so\'mdan yuqori xaridlar uchun yetkazish bepul.</p>';
+  }
+
+  // ── render a single cart card ─────────────────────────────────────────────
+  function renderCard(item) {
+    const img = item.product.image
+      || (item.product.images && item.product.images[0])
+      || 'img/placeholders/product.svg';
+    const price = Number(item.product.price || 0);
+    const lineTotal = price * item.qty;
+    return (
+      '<div class="market-cart-card" data-cart-index="' + item.index + '">' +
+        '<div class="market-cart-img">' +
+          '<img src="' + img + '" alt="' + (item.product.name || '') + '" loading="lazy">' +
+        '</div>' +
+        '<div class="market-cart-info">' +
+          '<div class="market-cart-title-row">' +
+            '<div>' +
+              '<h4>' + (item.product.name || 'Mahsulot') + '</h4>' +
+              '<p>' + (item.size || "O'lcham tanlanmagan") + ' / ' + (item.color || 'Rang tanlanmagan') + '</p>' +
+            '</div>' +
+          '</div>' +
+          '<div class="market-cart-price">' +
+            '<strong>' + formatMoney(price) + '</strong>' +
+            '<span id="cart-line-total-' + item.index + '">Jami: ' + formatMoney(lineTotal) + '</span>' +
+          '</div>' +
+          '<div class="market-cart-controls">' +
+            '<button type="button" class="cart-qty-btn" data-index="' + item.index + '" data-delta="-1" aria-label="Kamaytirish">-</button>' +
+            '<input type="number" min="1" value="' + item.qty + '" data-index="' + item.index + '" class="cart-qty-input" aria-label="Miqdor">' +
+            '<button type="button" class="cart-qty-btn" data-index="' + item.index + '" data-delta="1" aria-label="Ko\'paytirish">+</button>' +
+            '<a href="#" class="market-remove cart-remove" data-index="' + item.index + '" aria-label="O\'chirish">' +
+              '<i class="fa fa-trash"></i> O\'chirish' +
+            '</a>' +
+          '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }
+
+  // ── render full cart list ─────────────────────────────────────────────────
+  function renderCartList() {
+    const listEl = document.getElementById('cart-items-list');
+    if (!listEl) return;
+    if (!cartItems.length) {
+      // show empty state, replace entire root
+      root.innerHTML =
+        '<div class="market-empty-state">' +
+          '<div class="market-empty-icon"><i class="fa fa-shopping-bag"></i></div>' +
+          '<h3>Savat bo\'sh</h3>' +
+          '<p>Yoqtirgan mahsulotingizni katalogdan tanlang va savatga qo\'shing.</p>' +
+          '<a href="shop.html" class="market-btn"><i class="fa fa-th-large"></i> Katalogga o\'tish</a>' +
+        '</div>';
+      // hide sticky bar
+      const bar = document.getElementById('mb-cart-checkout-bar');
+      if (bar) bar.classList.add('mb-bar--hidden');
+      return;
+    }
+    listEl.innerHTML = cartItems.map(renderCard).join('');
+    bindCardEvents();
+  }
+
+  // ── update one card's qty display without full re-render ──────────────────
+  function updateCardQty(index, newQty) {
+    const card = document.querySelector('.market-cart-card[data-cart-index="' + index + '"]');
+    if (!card) return;
+    const input = card.querySelector('.cart-qty-input');
+    if (input) input.value = newQty;
+    const item = cartItems.find(i => i.index === index);
+    if (!item) return;
+    item.qty = newQty;
+    const price = Number(item.product.price || 0);
+    const lineTotalEl = document.getElementById('cart-line-total-' + index);
+    if (lineTotalEl) lineTotalEl.textContent = 'Jami: ' + formatMoney(price * newQty);
+  }
+
+  // ── bind events on rendered cards ────────────────────────────────────────
+  function bindCardEvents() {
+    // qty buttons
+    document.querySelectorAll('.cart-qty-btn').forEach(btn => {
+      btn.addEventListener('click', function () {
+        const index = Number(this.dataset.index);
+        const delta = Number(this.dataset.delta);
+        const item = cartItems.find(i => i.index === index);
+        if (!item) return;
+        const newQty = Math.max(1, item.qty + delta);
+        MBStore.updateQty(index, newQty);
+        updateCardQty(index, newQty);
+        renderSummary();
+        updateCheckoutBar();
+        refreshCartBadge();
+        // update item count label
+        const countEl = document.querySelector('.market-cart-head p');
+        if (countEl) countEl.textContent = cartItems.length + ' xil mahsulot tanlandi';
+      });
+    });
+
+    // qty input
+    document.querySelectorAll('.cart-qty-input').forEach(input => {
+      input.addEventListener('change', function () {
+        const index = Number(this.dataset.index);
+        const newQty = Math.max(1, Number(this.value) || 1);
+        MBStore.updateQty(index, newQty);
+        updateCardQty(index, newQty);
+        renderSummary();
+        updateCheckoutBar();
+        refreshCartBadge();
+      });
+    });
+
+    // remove buttons
+    document.querySelectorAll('.cart-remove').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const index = Number(this.dataset.index);
+        MBStore.removeFromCart(index);
+        // re-build cartItems from store (indices shift after removal)
+        const rawCart = MBStore.getCart();
+        cartItems = rawCart.map((entry, i) => ({
+          ...entry,
+          index: i,
+          product: allProducts.find(p => String(p.id) === String(entry.productId)) || entry.product || {},
+        }));
+        renderCartList();
+        renderSummary();
+        updateCheckoutBar();
+        refreshCartBadge();
+      });
+    });
+  }
+
+  // ── initial render ────────────────────────────────────────────────────────
+  const rawCart = MBStore.getCart();
+
+  if (!rawCart.length) {
+    root.innerHTML =
+      '<div class="market-empty-state">' +
+        '<div class="market-empty-icon"><i class="fa fa-shopping-bag"></i></div>' +
+        '<h3>Savat bo\'sh</h3>' +
+        '<p>Yoqtirgan mahsulotingizni katalogdan tanlang va savatga qo\'shing.</p>' +
+        '<a href="shop.html" class="market-btn"><i class="fa fa-th-large"></i> Katalogga o\'tish</a>' +
+      '</div>';
+    // inject hidden bar anyway (CSS handles hiding)
+    if (isMobile()) injectCheckoutBar();
     return;
   }
-  const products = await MBHelpers.loadProducts({ forceRefresh: true });
-  const enriched = cart.map((item, index) => ({
-    ...item,
-    index,
-    product: products.find((p) => String(p.id) === String(item.productId)) || item.product || {},
-  }));
-  const total = enriched.reduce((sum, item) => sum + (Number(item.product.price) || 0) * item.qty, 0);
-  const delivery = total > 300000 ? 0 : 25000;
-  const grandTotal = total + delivery;
-  root.innerHTML = `
-    <div class="market-cart-layout">
-      <div class="market-cart-list">
-        <div class="market-cart-head">
-          <div><h3>Savatdagi mahsulotlar</h3><p>${enriched.length} xil mahsulot tanlandi</p></div>
-          <a href="shop.html" class="market-mini-link"><i class="fa fa-plus"></i> Yana mahsulot qo'shish</a>
-        </div>
-        ${enriched.map(item => {
-          const img = item.product.image || (item.product.images && item.product.images[0]) || 'img/placeholders/product.svg';
-          const price = Number(item.product.price || 0);
-          return `
-          <div class="market-cart-card">
-            <div class="market-cart-img"><img src="${img}" alt=""></div>
-            <div class="market-cart-info">
-              <div class="market-cart-title-row">
-                <div><h4>${item.product.name || 'Mahsulot'}</h4><p>${item.size || "O'lcham tanlanmagan"} / ${item.color || 'Rang tanlanmagan'}</p></div>
-                <div class="market-cart-price"><strong>${price.toLocaleString('uz-UZ')} so'm</strong><span>Jami: ${(price * item.qty).toLocaleString('uz-UZ')} so'm</span></div>
-              </div>
-              <div class="market-cart-controls">
-                <label>Miqdor</label>
-                <button type="button" class="cart-qty-btn" data-index="${item.index}" data-delta="-1">-</button>
-                <input type="number" min="1" value="${item.qty}" data-index="${item.index}" class="cart-qty-input">
-                <button type="button" class="cart-qty-btn" data-index="${item.index}" data-delta="1">+</button>
-                <a href="#" class="market-remove cart-remove" data-index="${item.index}"><i class="fa fa-trash"></i> O'chirish</a>
-              </div>
-            </div>
-          </div>`;
-        }).join('')}
-      </div>
-      <aside class="market-order-summary">
-        <div class="summary-badge"><i class="fa fa-shield"></i> Xavfsiz buyurtma</div>
-        <h3>Buyurtma xulosasi</h3>
-        <div class="summary-line"><span>Mahsulotlar</span><strong>${total.toLocaleString('uz-UZ')} so'm</strong></div>
-        <div class="summary-line"><span>Yetkazib berish</span><strong>${delivery ? delivery.toLocaleString('uz-UZ') + " so'm" : "Bepul"}</strong></div>
-        <div class="summary-divider"></div>
-        <div class="summary-total"><span>Umumiy summa</span><strong>${grandTotal.toLocaleString('uz-UZ')} so'm</strong></div>
-        <a href="checkout.html" class="market-btn market-btn--full"><i class="fa fa-credit-card"></i> Buyurtmaga o'tish</a>
-        <p class="summary-note">300 000 so'mdan yuqori xaridlar uchun yetkazish bepul.</p>
-      </aside>
-    </div>`;
 
-  document.querySelectorAll('.cart-qty-input').forEach(input => input.addEventListener('change', function () {
-    MBStore.updateQty(Number(this.dataset.index), Number(this.value));
-    location.reload();
+  allProducts = await MBHelpers.loadProducts({ forceRefresh: true });
+  cartItems = rawCart.map((entry, i) => ({
+    ...entry,
+    index: i,
+    product: allProducts.find(p => String(p.id) === String(entry.productId)) || entry.product || {},
   }));
-  document.querySelectorAll('.cart-qty-btn').forEach(btn => btn.addEventListener('click', function () {
-    const index = Number(this.dataset.index);
-    const delta = Number(this.dataset.delta);
-    const item = MBStore.getCart()[index];
-    if (!item) return;
-    MBStore.updateQty(index, Math.max(1, Number(item.qty || 1) + delta));
-    location.reload();
-  }));
-  document.querySelectorAll('.cart-remove').forEach(link => link.addEventListener('click', function (e) {
-    e.preventDefault();
-    MBStore.removeFromCart(Number(this.dataset.index));
-    location.reload();
-  }));
+
+  const { subtotal, delivery, grandTotal } = calcTotals();
+
+  root.innerHTML =
+    '<div class="market-cart-layout">' +
+      '<div class="market-cart-list">' +
+        '<div class="market-cart-head">' +
+          '<div>' +
+            '<h3>Savatdagi mahsulotlar</h3>' +
+            '<p>' + cartItems.length + ' xil mahsulot tanlandi</p>' +
+          '</div>' +
+          '<a href="shop.html" class="market-mini-link"><i class="fa fa-plus"></i> Yana qo\'shish</a>' +
+        '</div>' +
+        '<div id="cart-items-list">' +
+          cartItems.map(renderCard).join('') +
+        '</div>' +
+      '</div>' +
+      '<aside class="market-order-summary" id="cart-summary-aside">' +
+        '<div class="summary-badge"><i class="fa fa-shield"></i> Xavfsiz buyurtma</div>' +
+        '<h3>Buyurtma xulosasi</h3>' +
+        '<div class="summary-line"><span>Mahsulotlar</span><strong>' + formatMoney(subtotal) + '</strong></div>' +
+        '<div class="summary-line"><span>Yetkazib berish</span><strong>' + (delivery ? formatMoney(delivery) : 'Bepul') + '</strong></div>' +
+        '<div class="summary-divider"></div>' +
+        '<div class="summary-total"><span>Umumiy summa</span><strong>' + formatMoney(grandTotal) + '</strong></div>' +
+        '<a href="checkout.html" class="market-btn market-btn--full"><i class="fa fa-credit-card"></i> Buyurtmaga o\'tish</a>' +
+        '<p class="summary-note">300 000 so\'mdan yuqori xaridlar uchun yetkazish bepul.</p>' +
+      '</aside>' +
+    '</div>';
+
+  bindCardEvents();
+
+  // inject sticky bar on mobile
+  if (isMobile()) {
+    injectCheckoutBar();
+    updateCheckoutBar();
+  }
+
+  // update bar on resize (e.g. orientation change)
+  window.addEventListener('resize', function () {
+    if (isMobile()) {
+      injectCheckoutBar();
+      updateCheckoutBar();
+    }
+  });
 })();

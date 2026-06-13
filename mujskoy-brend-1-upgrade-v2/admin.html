@@ -2896,63 +2896,96 @@
         return;
       }
 
-      list.innerHTML = cachedOrders.map((order, index) => {
-        const status = normalizeStatus(order.status);
-        const selectId = "orderStatus" + index;
-        const paymentType = String(order.paymentType || "naqd").toLowerCase() === "karta" ? "Karta" : "Naqd";
-        const screenshot = order.paymentScreenshot ? `
-          <div class="payment-shot">
-            <strong>To'lov skrinshoti</strong>
-            <a href="${escapeAttr(normalizeImage(order.paymentScreenshot))}" target="_blank">
-              <img src="${escapeAttr(normalizeImage(order.paymentScreenshot))}" alt="to'lov skrinshoti">
-            </a>
-          </div>
-        ` : "";
+      const isMobile = window.innerWidth <= 900;
 
-        return `
-          <article class="order-item">
-            <div class="order-head">
-              <div>
-                <span class="eyebrow">Buyurtma ID</span>
-                <strong>${escapeHtml(order.id || "-")}</strong>
+      if (isMobile) {
+        // ── MOBILE: compact tap-to-open rows ──
+        list.innerHTML = cachedOrders.map((order) => {
+          const status = normalizeStatus(order.status);
+          return `
+            <div class="order-compact-row" data-order-id="${escapeAttr(order.id)}" role="button" tabindex="0" aria-label="Buyurtma ${escapeHtml(order.id)}">
+              <div class="order-compact-left">
+                <span class="order-compact-id">${escapeHtml(order.id || "-")}</span>
+                <span class="order-compact-name">Mijoz: ${escapeHtml(order.name || "-")}</span>
               </div>
-              <span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span>
-            </div>
-
-            <div class="order-grid">
-              <div class="order-field"><span>Yaratilgan sana</span><strong>${escapeHtml(formatDate(order.createdAt))}</strong></div>
-              <div class="order-field"><span>Mijoz</span><strong>${escapeHtml(order.name || "-")}</strong></div>
-              <div class="order-field"><span>Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
-              <div class="order-field"><span>Manzil</span><strong>${escapeHtml(order.address || "-")}</strong></div>
-              <div class="order-field"><span>To'lov turi</span><strong>${escapeHtml(paymentType)}</strong></div>
-              <div class="order-field"><span>Jami</span><strong>${formatPrice(getOrderTotal(order))}</strong></div>
-            </div>
-
-            ${order.note ? `<div class="meta">Izoh: ${escapeHtml(order.note)}</div>` : ""}
-            ${renderOrderItems(order)}
-            ${screenshot}
-
-            <div class="status-control">
-              <div class="form-group" style="margin-bottom:0;">
-                <label for="${selectId}">Holat</label>
-                <select id="${selectId}">
-                  ${ORDER_STATUSES.map((item) => `<option value="${escapeAttr(item)}"${item === status ? " selected" : ""}>${escapeHtml(item)}</option>`).join("")}
-                </select>
+              <div class="order-compact-right">
+                <span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span>
+                <span class="order-compact-total">${formatPrice(getOrderTotal(order))}</span>
               </div>
-              <button class="btn btn-primary js-save-order-status" data-id="${escapeAttr(order.id)}" data-select="${selectId}">Holatni saqlash</button>
-              <button class="btn btn-danger js-delete-order" data-id="${escapeAttr(order.id)}">O'chirish</button>
+              <div class="order-compact-arrow">›</div>
             </div>
-          </article>
-        `;
-      }).join("");
+          `;
+        }).join("");
 
-      document.querySelectorAll(".js-save-order-status").forEach((btn) => {
-        btn.addEventListener("click", () => saveOrderStatus(btn.dataset.id, btn.dataset.select));
-      });
+        list.querySelectorAll(".order-compact-row").forEach((row) => {
+          const openDetail = () => {
+            const order = cachedOrders.find((o) => String(o.id) === String(row.dataset.orderId));
+            if (order) openOrderDetailModal(order);
+          };
+          row.addEventListener("click", openDetail);
+          row.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") openDetail(); });
+        });
 
-      document.querySelectorAll(".js-delete-order").forEach((btn) => {
-        btn.addEventListener("click", () => deleteOrder(btn.dataset.id));
-      });
+      } else {
+        // ── DESKTOP: full detail cards ──
+        list.innerHTML = cachedOrders.map((order, index) => {
+          const status = normalizeStatus(order.status);
+          const selectId = "orderStatus" + index;
+          const paymentType = String(order.paymentType || "naqd").toLowerCase() === "karta" ? "Karta" : "Naqd";
+          const screenshot = order.paymentScreenshot ? `
+            <div class="payment-shot">
+              <strong>To'lov skrinshoti</strong>
+              <a href="${escapeAttr(normalizeImage(order.paymentScreenshot))}" target="_blank">
+                <img src="${escapeAttr(normalizeImage(order.paymentScreenshot))}" alt="to'lov skrinshoti">
+              </a>
+            </div>
+          ` : "";
+
+          return `
+            <article class="order-item">
+              <div class="order-head">
+                <div>
+                  <span class="eyebrow">Buyurtma ID</span>
+                  <strong>${escapeHtml(order.id || "-")}</strong>
+                </div>
+                <span class="status-badge ${statusClass(status)}">${escapeHtml(status)}</span>
+              </div>
+
+              <div class="order-grid">
+                <div class="order-field"><span>Yaratilgan sana</span><strong>${escapeHtml(formatDate(order.createdAt))}</strong></div>
+                <div class="order-field"><span>Mijoz</span><strong>${escapeHtml(order.name || "-")}</strong></div>
+                <div class="order-field"><span>Telefon</span><strong>${escapeHtml(order.phone || "-")}</strong></div>
+                <div class="order-field"><span>Manzil</span><strong>${escapeHtml(order.address || "-")}</strong></div>
+                <div class="order-field"><span>To'lov turi</span><strong>${escapeHtml(paymentType)}</strong></div>
+                <div class="order-field"><span>Jami</span><strong>${formatPrice(getOrderTotal(order))}</strong></div>
+              </div>
+
+              ${order.note ? `<div class="meta">Izoh: ${escapeHtml(order.note)}</div>` : ""}
+              ${renderOrderItems(order)}
+              ${screenshot}
+
+              <div class="status-control">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label for="${selectId}">Holat</label>
+                  <select id="${selectId}">
+                    ${ORDER_STATUSES.map((item) => `<option value="${escapeAttr(item)}"${item === status ? " selected" : ""}>${escapeHtml(item)}</option>`).join("")}
+                  </select>
+                </div>
+                <button class="btn btn-primary js-save-order-status" data-id="${escapeAttr(order.id)}" data-select="${selectId}">Holatni saqlash</button>
+                <button class="btn btn-danger js-delete-order" data-id="${escapeAttr(order.id)}">O'chirish</button>
+              </div>
+            </article>
+          `;
+        }).join("");
+
+        document.querySelectorAll(".js-save-order-status").forEach((btn) => {
+          btn.addEventListener("click", () => saveOrderStatus(btn.dataset.id, btn.dataset.select));
+        });
+
+        document.querySelectorAll(".js-delete-order").forEach((btn) => {
+          btn.addEventListener("click", () => deleteOrder(btn.dataset.id));
+        });
+      }
     }
 
     async function saveOrderStatus(orderId, selectId) {
@@ -3222,6 +3255,11 @@
         window.addEventListener('resize', function () {
           if (!isMobile()) {
             sidebar.classList.remove('sidebar--open');
+          }
+          // Re-render orders list when crossing the mobile/desktop breakpoint
+          const ordersList = document.getElementById('ordersList');
+          if (ordersList && ordersList.children.length > 0 && typeof renderOrders === 'function') {
+            renderOrders();
           }
         });
       }
