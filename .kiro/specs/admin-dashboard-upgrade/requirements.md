@@ -234,13 +234,14 @@ The upgrade targets `admin.html`, `css/admin-upgrade.css`, and `css/admin-mobile
 
 #### Acceptance Criteria
 
-1. THE Admin login form SHALL accept username "admin" and password "12345678" and authenticate the user without any change in behavior.
-2. THE logout function (`logout()`) SHALL clear the session and return the user to the login page.
-3. THE sidebar navigation (`showSection()`) SHALL switch between all sections — dashboard, add, products, orders, categories, promocodes, reviews, settings — without errors.
-4. THE `addProduct()` function SHALL save a new product and show the success toast.
-5. THE product list SHALL render all products via `renderProducts()` with edit and delete controls.
-6. THE order status update SHALL save the new status and show the "Buyurtma statusi yangilandi" toast.
-7. THE order delete SHALL remove the order and show the "Buyurtma o'chirildi" toast.
-8. THE ODM_Drawer (order detail modal/drawer) SHALL open when a recent order row or order detail button is clicked, and close when the overlay or close button is clicked.
-9. THE dashboard statistics (`#statProducts`, `#statOrders`, `#statTodayOrders`, `#statRevenue`, `#statDeliveredOrders`, `#statCancelledOrders`) SHALL continue to be populated by `loadDashboard()`.
-10. THE Toast notification system SHALL continue to function: success toasts in green, error toasts in red, auto-dismiss after 3 seconds.
+1. WHEN the admin submits the login form with username "admin" and password "12345678", THE Admin_Shell SHALL hide the login overlay and display the main dashboard section.
+2. WHEN the admin submits the login form with incorrect credentials, THE Admin_Shell SHALL display an error message and SHALL NOT advance past the login screen.
+3. WHEN the `logout()` function is called, THE Admin_Shell SHALL clear the authenticated session and display the login overlay, hiding all dashboard content.
+4. WHEN `showSection(sectionId)` is called with any of the values — dashboard, add, products, orders, categories, promocodes, reviews, settings — THE Admin_Shell SHALL display only the matching section panel and hide all others, with no JavaScript console errors thrown.
+5. WHEN the admin submits the add-product form with valid data, THE `addProduct()` function SHALL persist the product entry and THE Admin_Shell SHALL display a Toast reading "Mahsulot muvaffaqiyatli qo'shildi".
+6. WHEN `renderProducts()` is called, THE Admin_Shell SHALL display one Product_Card per product entry, each containing an edit control and a delete control.
+7. WHEN the admin selects a new status from the order status dropdown and clicks "Holatni saqlash", THE Admin_Shell SHALL persist the updated status and display a Toast reading "Buyurtma statusi yangilandi".
+8. WHEN the admin clicks "O'chirish" on an Order_Item, THE Admin_Shell SHALL remove that order from the list and display a Toast reading "Buyurtma o'chirildi".
+9. WHEN the admin clicks a Recent_Row or an order detail button, THE ODM_Drawer SHALL become visible with the correct order's details; WHEN the admin clicks the overlay or the close button, THE ODM_Drawer SHALL become hidden.
+10. WHEN `loadDashboard()` is called, THE Admin_Shell SHALL populate `#statProducts`, `#statOrders`, `#statTodayOrders`, `#statRevenue`, `#statDeliveredOrders`, and `#statCancelledOrders` with computed values derived from the current data.
+11. WHEN the Toast system displays a success notification, THE Toast SHALL use a green background; WHEN it displays an error notification, THE Toast SHALL use a red background; in both cases THE Toast SHALL auto-dismiss after 3 seconds.
