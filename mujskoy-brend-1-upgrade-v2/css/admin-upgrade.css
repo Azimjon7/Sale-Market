@@ -26,10 +26,9 @@ body.market-body {
   min-height: 100vh !important;
   color: var(--adm-text) !important;
   background:
-    radial-gradient(ellipse 900px 500px at 8% 0%, rgba(124, 58, 237, 0.12), transparent),
-    radial-gradient(ellipse 700px 400px at 95% 5%, rgba(255, 212, 0, 0.14), transparent),
-    radial-gradient(ellipse 600px 400px at 50% 100%, rgba(37, 99, 235, 0.06), transparent),
-    linear-gradient(160deg, #f8fafc 0%, #eef2ff 40%, #f5f7fb 100%) !important;
+    radial-gradient(ellipse at 0% 0%, rgba(124, 58, 237, 0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 100% 0%, rgba(255, 212, 0, 0.14) 0%, transparent 50%),
+    #f5f7fb !important;
   font-family: Inter, "Segoe UI", Arial, sans-serif !important;
   overflow-x: hidden;
   letter-spacing: -0.01em;
@@ -321,6 +320,46 @@ body.market-body::before {
   line-height: 1.4 !important;
 }
 
+/* Requirement 3.1 — pageTitle explicit ID override */
+#pageTitle {
+  margin: 0 !important;
+  color: var(--adm-text, #0f172a) !important;
+  font-size: clamp(26px, 2.5vw, 32px) !important;
+  line-height: 1.15 !important;
+  letter-spacing: -0.02em !important;
+  font-weight: 800 !important;
+}
+
+/* Requirement 3.2 — pageDesc explicit ID override */
+#pageDesc {
+  margin: 5px 0 0 !important;
+  color: var(--adm-muted, #64748b) !important;
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+}
+
+/* Requirement 3.5 — topbar action items: icon button + mini avatar at 46px */
+.topbar .admin-icon-btn {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: var(--adm-purple, #6d28d9) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+.topbar .admin-mini-avatar {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  border-radius: 14px !important;
+  flex-shrink: 0 !important;
+  cursor: pointer;
+}
+
 .admin-top-actions {
   display: flex;
   align-items: center;
@@ -344,8 +383,8 @@ body.market-body::before {
 }
 
 .admin-global-search:focus-within {
-  border-color: rgba(109, 40, 217, 0.4);
-  box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
+  border-color: rgba(109, 40, 217, 0.4); /* --adm-purple tinted */
+  box-shadow: 0 0 0 4px rgba(109, 40, 217, 0.08) !important;
   background: #fff;
 }
 
@@ -376,10 +415,11 @@ body.market-body::before {
 }
 
 .admin-icon-btn {
-  width: 46px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  color: var(--adm-purple);
-  background: rgba(255, 255, 255, 0.9);
+  width: 46px !important;
+  height: 46px !important;
+  border: 1px solid rgba(148, 163, 184, 0.2) !important;
+  color: var(--adm-purple, #6d28d9) !important;
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 .admin-icon-btn span {
@@ -490,7 +530,7 @@ body.market-body::before {
 .stat-card:hover {
   transform: translateY(-4px) !important;
   box-shadow: 0 20px 48px rgba(15, 23, 42, 0.1) !important;
-  border-color: rgba(109, 40, 217, 0.18) !important;
+  border-color: rgba(109, 40, 217, 0.2) !important;
 }
 
 .stat-card:hover::before {
@@ -515,36 +555,41 @@ body.market-body::before {
   height: 44px;
   margin-bottom: 14px;
   border-radius: 14px;
-  color: #0f172a;
-  background: linear-gradient(135deg, var(--adm-yellow), #fff3a2);
+  color: #fff;
+  background: linear-gradient(135deg, #6d28d9, #7c3aed);
   font-weight: 900;
   font-size: 16px;
-  box-shadow: 0 6px 16px rgba(255, 212, 0, 0.22);
+  box-shadow: 0 6px 16px rgba(109, 40, 217, 0.28);
 }
 
 .stat-card:nth-child(2) .stat-icon {
-  background: linear-gradient(135deg, #dbeafe, #93c5fd);
-  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.15);
+  color: #fff;
+  background: linear-gradient(135deg, #2563eb, #3b82f6);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.28);
 }
 
 .stat-card:nth-child(3) .stat-icon {
-  background: linear-gradient(135deg, #fef3c7, #fcd34d);
-  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.18);
+  color: #fff;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  box-shadow: 0 6px 16px rgba(22, 163, 74, 0.28);
 }
 
 .stat-card:nth-child(4) .stat-icon {
-  background: linear-gradient(135deg, #dcfce7, #86efac);
-  box-shadow: 0 6px 16px rgba(22, 163, 106, 0.15);
+  color: #fff;
+  background: linear-gradient(135deg, #d97706, #f59e0b);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.28);
 }
 
 .stat-card:nth-child(5) .stat-icon {
-  background: linear-gradient(135deg, #cffafe, #67e8f9);
-  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.15);
+  color: #fff;
+  background: linear-gradient(135deg, #0891b2, #06b6d4);
+  box-shadow: 0 6px 16px rgba(8, 145, 178, 0.28);
 }
 
 .stat-card:nth-child(6) .stat-icon {
-  background: linear-gradient(135deg, #fee2e2, #fca5a5);
-  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.15);
+  color: #fff;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
 }
 
 .stat-card span {
@@ -567,10 +612,10 @@ body.market-body::before {
 .stat-card small {
   display: inline-flex;
   margin-top: 10px;
-  padding: 5px 10px;
+  padding: 2px 8px;
   border-radius: 999px;
-  color: #166534;
-  background: #dcfce7;
+  color: #16a34a;
+  background: rgba(22, 163, 74, 0.1);
   font-size: 11px;
   font-weight: 800;
 }
@@ -716,39 +761,87 @@ body.market-body::before {
 }
 
 /* ===================== DASHBOARD RECENT ===================== */
+/* Req 6.1 — standalone glass card */
 .dashboard-recent {
   margin-top: 22px !important;
-  border-top: 0 !important;
-  padding-top: 0 !important;
+  padding: 22px !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-top: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 20px !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  box-shadow: var(--adm-shadow) !important;
+  backdrop-filter: blur(20px) !important;
+  transition: all var(--adm-transition) !important;
 }
 
+/* Req 6.2 — heading typography */
+.dashboard-recent h3,
 .dashboard-recent h4 {
   margin-bottom: 16px !important;
-  font-size: 18px !important;
+  color: var(--adm-text) !important;
+  font-size: 17px !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.01em !important;
 }
 
+/* Req 6.1 — recent list grid */
 .recent-list {
   display: grid !important;
   gap: 10px !important;
 }
 
+/* Req 6.2 — two-column row grid */
 .recent-row {
   display: grid !important;
-  grid-template-columns: 1fr auto !important;
-  gap: 14px !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
   align-items: center !important;
-  padding: 14px 16px !important;
-  border: 1px solid rgba(148, 163, 184, 0.12) !important;
-  border-radius: var(--adm-radius-sm) !important;
+  gap: 12px !important;
+  padding: 14px !important;
+  border: 1px solid rgba(148, 163, 184, 0.1) !important;
+  border-radius: 16px !important;
   background: rgba(255, 255, 255, 0.9) !important;
   transition: all var(--adm-transition) !important;
 }
 
+/* Req 6.3 — hover: 3px right shift, white bg, soft shadow */
 .recent-row:hover {
-  background: rgba(255, 255, 255, 1) !important;
-  border-color: rgba(109, 40, 217, 0.14) !important;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06) !important;
   transform: translateX(3px) !important;
+  background: #fff !important;
+  border-color: rgba(148, 163, 184, 0.18) !important;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.07) !important;
+}
+
+/* Req 6.2 — row info sub-elements */
+.recent-row-info {
+  display: grid !important;
+  gap: 3px !important;
+  min-width: 0 !important;
+}
+
+.recent-row-info strong {
+  display: block !important;
+  overflow: hidden !important;
+  color: var(--adm-text) !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.recent-row-info span {
+  display: block !important;
+  color: var(--adm-muted) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+/* Req 6.2 — row actions column */
+.recent-row-actions {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-end !important;
+  gap: 6px !important;
+  flex-shrink: 0 !important;
 }
 
 /* ===================== FORMS & INPUTS ===================== */
@@ -1173,22 +1266,20 @@ textarea:focus {
 @keyframes adminFadeUp {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 }
 
 @keyframes adminGrow {
   from {
-    transform: scaleY(0.3);
-    transform-origin: bottom;
+    transform: scaleY(0);
   }
   to {
     transform: scaleY(1);
-    transform-origin: bottom;
   }
 }
 
